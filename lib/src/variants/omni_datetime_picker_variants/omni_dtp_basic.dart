@@ -20,6 +20,7 @@ class OmniDtpBasic extends StatelessWidget {
     this.constraints,
     this.type,
     this.selectableDayPredicate,
+    required this.timePickerSpinnerConfig,
   });
 
   final Widget? separator;
@@ -35,6 +36,7 @@ class OmniDtpBasic extends StatelessWidget {
   final BoxConstraints? constraints;
   final OmniDateTimePickerType? type;
   final bool Function(DateTime)? selectableDayPredicate;
+  final TimePickerSpinnerConfig? timePickerSpinnerConfig;
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +101,7 @@ class OmniDtpBasic extends StatelessWidget {
 
                     selectedDateTime = tempDateTime;
                   },
+                  timePickerSpinnerConfig: timePickerSpinnerConfig,
                 ),
               ),
             ButtonRow(onSavePressed: () {

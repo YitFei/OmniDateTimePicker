@@ -3,26 +3,26 @@ import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:omni_datetime_picker/src/variants/omni_datetime_range_picker_variants/omni_dtp_range.dart';
 
 class OmniDateTimeRangePicker extends StatelessWidget {
-  const OmniDateTimeRangePicker({
-    super.key,
-    this.startInitialDate,
-    this.startFirstDate,
-    this.startLastDate,
-    this.endInitialDate,
-    this.endFirstDate,
-    this.endLastDate,
-    this.isShowSeconds,
-    this.is24HourMode,
-    this.minutesInterval,
-    this.secondsInterval,
-    this.isForce2Digits,
-    this.isForceEndDateAfterStartDate,
-    this.borderRadius,
-    this.constraints,
-    required this.type,
-    this.selectableDayPredicate,
-    this.defaultView = DefaultView.start,
-  });
+  const OmniDateTimeRangePicker(
+      {super.key,
+      this.startInitialDate,
+      this.startFirstDate,
+      this.startLastDate,
+      this.endInitialDate,
+      this.endFirstDate,
+      this.endLastDate,
+      this.isShowSeconds,
+      this.is24HourMode,
+      this.minutesInterval,
+      this.secondsInterval,
+      this.isForce2Digits,
+      this.isForceEndDateAfterStartDate,
+      this.borderRadius,
+      this.constraints,
+      required this.type,
+      this.selectableDayPredicate,
+      this.defaultView = DefaultView.start,
+      required this.timePickerSpinnerConfig});
 
   final DateTime? startInitialDate;
   final DateTime? startFirstDate;
@@ -42,6 +42,8 @@ class OmniDateTimeRangePicker extends StatelessWidget {
   final OmniDateTimePickerType type;
   final bool Function(DateTime)? selectableDayPredicate;
   final DefaultView defaultView;
+
+  final TimePickerSpinnerConfig? timePickerSpinnerConfig;
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +73,7 @@ class OmniDateTimeRangePicker extends StatelessWidget {
         type: type,
         selectableDayPredicate: selectableDayPredicate,
         defaultView: defaultView,
+        timePickerSpinnerConfig: timePickerSpinnerConfig,
       ),
     );
   }

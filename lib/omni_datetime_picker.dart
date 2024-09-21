@@ -6,6 +6,8 @@
 ///
 library omni_datetime_picker;
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:omni_datetime_picker/src/omni_datetime_picker.dart';
 import 'package:omni_datetime_picker/src/omni_datetime_range_picker.dart';
@@ -14,28 +16,28 @@ import 'package:omni_datetime_picker/src/omni_datetime_range_picker.dart';
 ///
 /// Returns a DateTime
 ///
-Future<DateTime?> showOmniDateTimePicker({
-  required BuildContext context,
-  Widget? title,
-  Widget? separator,
-  DateTime? initialDate,
-  DateTime? firstDate,
-  DateTime? lastDate,
-  bool? is24HourMode,
-  bool? isShowSeconds,
-  int? minutesInterval,
-  int? secondsInterval,
-  bool? isForce2Digits,
-  BorderRadiusGeometry? borderRadius,
-  BoxConstraints? constraints,
-  Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
-      transitionBuilder,
-  Duration? transitionDuration,
-  bool? barrierDismissible,
-  OmniDateTimePickerType type = OmniDateTimePickerType.dateAndTime,
-  final bool Function(DateTime)? selectableDayPredicate,
-  ThemeData? theme,
-}) {
+Future<DateTime?> showOmniDateTimePicker(
+    {required BuildContext context,
+    Widget? title,
+    Widget? separator,
+    DateTime? initialDate,
+    DateTime? firstDate,
+    DateTime? lastDate,
+    bool? is24HourMode,
+    bool? isShowSeconds,
+    int? minutesInterval,
+    int? secondsInterval,
+    bool? isForce2Digits,
+    BorderRadiusGeometry? borderRadius,
+    BoxConstraints? constraints,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+        transitionBuilder,
+    Duration? transitionDuration,
+    bool? barrierDismissible,
+    OmniDateTimePickerType type = OmniDateTimePickerType.dateAndTime,
+    final bool Function(DateTime)? selectableDayPredicate,
+    ThemeData? theme,
+    TimePickerSpinnerConfig? timePickerSpinnerConfig}) {
   return showGeneralDialog(
     context: context,
     transitionBuilder: transitionBuilder ??
@@ -57,6 +59,7 @@ Future<DateTime?> showOmniDateTimePicker({
       return Theme(
         data: theme ?? Theme.of(context),
         child: OmniDateTimePicker(
+          timePickerSpinnerConfig: timePickerSpinnerConfig,
           separator: separator,
           title: title,
           type: type,
@@ -107,6 +110,7 @@ Future<List<DateTime>?> showOmniDateTimeRangePicker({
   bool Function(DateTime)? selectableDayPredicate,
   ThemeData? theme,
   DefaultView defaultView = DefaultView.start,
+  TimePickerSpinnerConfig? timePickerSpinnerConfig,
 }) {
   return showGeneralDialog(
     context: context,
@@ -146,6 +150,7 @@ Future<List<DateTime>?> showOmniDateTimeRangePicker({
           constraints: constraints,
           selectableDayPredicate: selectableDayPredicate,
           defaultView: defaultView,
+          timePickerSpinnerConfig: timePickerSpinnerConfig,
         ),
       );
     },
@@ -161,3 +166,110 @@ enum OmniDateTimePickerType {
 
 /// Decides which tab open by default
 enum DefaultView { start, end }
+
+class TimePickerSpinnerConfig {
+  final double? itemHeight;
+  final double? itemWidth;
+  final double? spacing;
+  late int itemCount;
+
+  final BoxDecoration? Function({required bool isSelected})? spinnerBoxDeco;
+  late Container selectedVerticalContainer;
+  final TextStyle? Function({required bool isSelected})? textStyle;
+  final bool unselectedHasRotation;
+  late int getMedian;
+  late int lengthToMedian;
+
+  TimePickerSpinnerConfig(
+      {this.itemHeight,
+      this.itemWidth,
+      this.spacing,
+      this.spinnerBoxDeco,
+      Container? selectedVerticalContainer,
+      this.textStyle,
+      this.unselectedHasRotation = false,
+      int? itemCount}) {
+    this.selectedVerticalContainer =
+        selectedVerticalContainer ?? defaultSelectedVerticalContainer();
+    this.itemCount = itemCount ?? defaultItemCount;
+    if (this.itemCount < defaultItemCount) {
+      throw Exception(
+          'itemCount cannot less than ${defaultItemCount.toString()}.');
+    }
+    if (this.itemCount % 2 == 0) {
+      throw Exception('itemCount must be an odd number.');
+    }
+    getMedian = (this.itemCount + 1) ~/ 2;
+    lengthToMedian = getMedian - 1;
+  }
+
+  static BoxDecoration defaultSpinnerBoxDeco({required bool isSelected}) {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(5),
+      color: isSelected ? Colors.grey.withOpacity(0.3) : null,
+    );
+  }
+
+  static TextStyle defaultTextStyle(
+      {required BuildContext context, required bool isSelected}) {
+    TextStyle style = (isSelected
+            ? Theme.of(context).textTheme.headlineSmall
+            : Theme.of(context).textTheme.bodyLarge) ??
+        const TextStyle();
+    return style;
+  }
+
+  static double getRotationAngle(int index, int selectedIndex, int total) {
+    if (index == 0) return 0;
+    double maxRotation = pi / 3;
+
+    int distance = (index - selectedIndex + total) % total;
+    if (distance > total / 2) {
+      distance = total - distance;
+    }
+    double normalizedDistance = distance / (total / 2.0);
+    double rotation = maxRotation * normalizedDistance;
+
+    return rotation;
+  }
+
+  static Matrix4 getRotationX(
+      {required int selectedIndex,
+      required int currentIndex,
+      required bool? unselectedHasRotation,
+      required bool isSelected,
+      required int total,
+      required int lengthToMedian}) {
+    List<int> indexAround = [];
+    List<double> rotations = [];
+
+    for (int i = lengthToMedian * -1; i <= lengthToMedian; i++) {
+      int timeIndex = selectedIndex - i;
+      indexAround.add(timeIndex);
+      rotations.add(getRotationAngle(i, 0, (lengthToMedian * 2) + 1));
+    }
+    // if (selectedIndex == currentIndex) {
+    //   debugPrint("rotation $rotations");
+    // }
+
+    double rotation = indexAround.contains(currentIndex)
+        ? rotations[indexAround.indexOf(currentIndex)]
+        : 0;
+
+    return unselectedHasRotation != null && unselectedHasRotation
+        ? (isSelected ? Matrix4.rotationX(0) : Matrix4.identity()
+          ..setEntry(3, 2, 0.001)
+          ..rotateX(rotation))
+        : Matrix4.rotationX(0);
+  }
+
+  static int defaultItemCount = 3;
+  static int defaultMedian = (defaultItemCount + 1) ~/ 2;
+  static int defaultLengthToMedian = defaultMedian - 1;
+
+  static defaultSelectedVerticalContainer() {
+    return Container(
+      color: Colors.black.withOpacity(0),
+    );
+  }
+}

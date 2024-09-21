@@ -18,7 +18,8 @@ class OmniDateTimePicker extends StatelessWidget {
       this.borderRadius,
       this.constraints,
       required this.type,
-      this.selectableDayPredicate});
+      this.selectableDayPredicate,
+      required this.timePickerSpinnerConfig});
 
   /// A widget that separates the [title] - if not null - and the calendar, also separates between date and time pickers
   final Widget? separator;
@@ -35,6 +36,7 @@ class OmniDateTimePicker extends StatelessWidget {
   final BoxConstraints? constraints;
   final OmniDateTimePickerType type;
   final bool Function(DateTime)? selectableDayPredicate;
+  final TimePickerSpinnerConfig? timePickerSpinnerConfig;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +63,7 @@ class OmniDateTimePicker extends StatelessWidget {
         constraints: constraints,
         type: type,
         selectableDayPredicate: selectableDayPredicate,
+        timePickerSpinnerConfig: timePickerSpinnerConfig,
       ),
     );
   }

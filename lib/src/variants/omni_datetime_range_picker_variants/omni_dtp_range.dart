@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:omni_datetime_picker/src/components/button_row.dart';
 import 'package:omni_datetime_picker/src/components/calendar.dart';
@@ -24,6 +26,9 @@ class OmniDtpRange extends StatefulWidget {
     this.type,
     this.selectableDayPredicate,
     this.defaultView = DefaultView.start,
+
+    //* Time Spinner
+    required this.timePickerSpinnerConfig,
   }) : isForceEndDateAfterStartDate = isForceEndDateAfterStartDate ?? false;
 
   final DateTime? startInitialDate;
@@ -44,6 +49,9 @@ class OmniDtpRange extends StatefulWidget {
   final OmniDateTimePickerType? type;
   final bool Function(DateTime)? selectableDayPredicate;
   final DefaultView defaultView;
+
+  //* Time Spinner
+  final TimePickerSpinnerConfig? timePickerSpinnerConfig;
 
   @override
   State<OmniDtpRange> createState() => _OmniDtpRangeState();
@@ -90,145 +98,141 @@ class _OmniDtpRangeState extends State<OmniDtpRange>
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: ConstrainedBox(
-        constraints: widget.constraints ??
-            const BoxConstraints(
-              maxWidth: 350,
-              maxHeight: 650,
+    return ConstrainedBox(
+      constraints: widget.constraints ??
+          const BoxConstraints(
+            maxWidth: 350,
+            maxHeight: 650,
+          ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CustomTabBar(tabController: _tabController),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                PickerView(
+                  type: widget.type,
+                  initialDate: widget.startInitialDate,
+                  firstDate: widget.startFirstDate,
+                  lastDate: widget.startLastDate,
+                  isShowSeconds: widget.isShowSeconds,
+                  is24HourMode: widget.is24HourMode ?? false,
+                  minutesInterval: widget.minutesInterval,
+                  secondsInterval: widget.secondsInterval,
+                  isForce2Digits: widget.isForce2Digits ?? false,
+                  onDateChange: (value) {
+                    DateTime tempDateTime = DateTime(
+                      value.year,
+                      value.month,
+                      value.day,
+                      _selectedStartDateTime.value.hour,
+                      _selectedStartDateTime.value.minute,
+                      widget.isShowSeconds ?? false
+                          ? _selectedStartDateTime.value.second
+                          : 0,
+                    );
+
+                    _selectedStartDateTime.value = tempDateTime;
+                  },
+                  onTimeChange: (value) {
+                    DateTime tempDateTime = DateTime(
+                      _selectedStartDateTime.value.year,
+                      _selectedStartDateTime.value.month,
+                      _selectedStartDateTime.value.day,
+                      value.hour,
+                      value.minute,
+                      widget.isShowSeconds ?? false ? value.second : 0,
+                    );
+
+                    _selectedStartDateTime.value = tempDateTime;
+                  },
+                  selectableDayPredicate: widget.selectableDayPredicate,
+                  timePickerSpinnerConfig: widget.timePickerSpinnerConfig,
+                ),
+                PickerView(
+                  type: widget.type,
+                  selectedStartDate: widget.isForceEndDateAfterStartDate
+                      ? _selectedStartDateTime
+                      : null,
+                  selectedEndDate: widget.isForceEndDateAfterStartDate
+                      ? _selectedEndDateTime
+                      : null,
+                  initialDate: widget.endInitialDate,
+                  firstDate: widget.endFirstDate,
+                  lastDate: widget.endLastDate,
+                  isShowSeconds: widget.isShowSeconds,
+                  is24HourMode: widget.is24HourMode ?? false,
+                  minutesInterval: widget.minutesInterval,
+                  secondsInterval: widget.secondsInterval,
+                  isForce2Digits: widget.isForce2Digits ?? false,
+                  onDateChange: (value) {
+                    DateTime tempDateTime = DateTime(
+                      value.year,
+                      value.month,
+                      value.day,
+                      _selectedEndDateTime.value.hour,
+                      _selectedEndDateTime.value.minute,
+                      widget.isShowSeconds ?? false
+                          ? _selectedEndDateTime.value.second
+                          : 0,
+                    );
+
+                    _selectedEndDateTime.value = tempDateTime;
+                  },
+                  onTimeChange: (value) {
+                    DateTime tempDateTime = DateTime(
+                      _selectedEndDateTime.value.year,
+                      _selectedEndDateTime.value.month,
+                      _selectedEndDateTime.value.day,
+                      value.hour,
+                      value.minute,
+                      widget.isShowSeconds ?? false ? value.second : 0,
+                    );
+
+                    _selectedEndDateTime.value = tempDateTime;
+                  },
+                  selectableDayPredicate: widget.selectableDayPredicate,
+                  timePickerSpinnerConfig: widget.timePickerSpinnerConfig,
+                ),
+              ],
             ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CustomTabBar(tabController: _tabController),
-            ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 350,
-                maxHeight: 550,
-              ),
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  PickerView(
-                    type: widget.type,
-                    initialDate: widget.startInitialDate,
-                    firstDate: widget.startFirstDate,
-                    lastDate: widget.startLastDate,
-                    isShowSeconds: widget.isShowSeconds,
-                    is24HourMode: widget.is24HourMode ?? false,
-                    minutesInterval: widget.minutesInterval,
-                    secondsInterval: widget.secondsInterval,
-                    isForce2Digits: widget.isForce2Digits ?? false,
-                    onDateChange: (value) {
-                      DateTime tempDateTime = DateTime(
-                        value.year,
-                        value.month,
-                        value.day,
-                        _selectedStartDateTime.value.hour,
-                        _selectedStartDateTime.value.minute,
-                        widget.isShowSeconds ?? false
-                            ? _selectedStartDateTime.value.second
-                            : 0,
-                      );
-
-                      _selectedStartDateTime.value = tempDateTime;
-                    },
-                    onTimeChange: (value) {
-                      DateTime tempDateTime = DateTime(
-                        _selectedStartDateTime.value.year,
-                        _selectedStartDateTime.value.month,
-                        _selectedStartDateTime.value.day,
-                        value.hour,
-                        value.minute,
-                        widget.isShowSeconds ?? false ? value.second : 0,
-                      );
-
-                      _selectedStartDateTime.value = tempDateTime;
-                    },
-                    selectableDayPredicate: widget.selectableDayPredicate,
-                  ),
-                  PickerView(
-                    type: widget.type,
-                    selectedStartDate: widget.isForceEndDateAfterStartDate
-                        ? _selectedStartDateTime
-                        : null,
-                    selectedEndDate: widget.isForceEndDateAfterStartDate
-                        ? _selectedEndDateTime
-                        : null,
-                    initialDate: widget.endInitialDate,
-                    firstDate: widget.endFirstDate,
-                    lastDate: widget.endLastDate,
-                    isShowSeconds: widget.isShowSeconds,
-                    is24HourMode: widget.is24HourMode ?? false,
-                    minutesInterval: widget.minutesInterval,
-                    secondsInterval: widget.secondsInterval,
-                    isForce2Digits: widget.isForce2Digits ?? false,
-                    onDateChange: (value) {
-                      DateTime tempDateTime = DateTime(
-                        value.year,
-                        value.month,
-                        value.day,
-                        _selectedEndDateTime.value.hour,
-                        _selectedEndDateTime.value.minute,
-                        widget.isShowSeconds ?? false
-                            ? _selectedEndDateTime.value.second
-                            : 0,
-                      );
-
-                      _selectedEndDateTime.value = tempDateTime;
-                    },
-                    onTimeChange: (value) {
-                      DateTime tempDateTime = DateTime(
-                        _selectedEndDateTime.value.year,
-                        _selectedEndDateTime.value.month,
-                        _selectedEndDateTime.value.day,
-                        value.hour,
-                        value.minute,
-                        widget.isShowSeconds ?? false ? value.second : 0,
-                      );
-
-                      _selectedEndDateTime.value = tempDateTime;
-                    },
-                    selectableDayPredicate: widget.selectableDayPredicate,
-                  ),
-                ],
-              ),
-            ),
-            ButtonRow(onSavePressed: () {
-              Navigator.pop<List<DateTime>>(context, [
-                _selectedStartDateTime.value,
-                _selectedEndDateTime.value
-                            .isBefore(_selectedStartDateTime.value) &&
-                        widget.isForceEndDateAfterStartDate
-                    ? _selectedStartDateTime.value.copyWith()
-                    : _selectedEndDateTime.value
-              ]);
-            }),
-          ],
-        ),
+          ),
+          ButtonRow(onSavePressed: () {
+            Navigator.pop<List<DateTime>>(context, [
+              _selectedStartDateTime.value,
+              _selectedEndDateTime.value
+                          .isBefore(_selectedStartDateTime.value) &&
+                      widget.isForceEndDateAfterStartDate
+                  ? _selectedStartDateTime.value.copyWith()
+                  : _selectedEndDateTime.value
+            ]);
+          }),
+        ],
       ),
     );
   }
 }
 
 class PickerView extends StatefulWidget {
-  const PickerView({
-    super.key,
-    this.initialDate,
-    this.firstDate,
-    this.lastDate,
-    this.selectedStartDate,
-    this.selectedEndDate,
-    this.isShowSeconds,
-    required this.onTimeChange,
-    required this.onDateChange,
-    this.is24HourMode,
-    this.minutesInterval,
-    this.secondsInterval,
-    this.isForce2Digits,
-    this.type,
-    this.selectableDayPredicate,
-  });
+  const PickerView(
+      {super.key,
+      this.initialDate,
+      this.firstDate,
+      this.lastDate,
+      this.selectedStartDate,
+      this.selectedEndDate,
+      this.isShowSeconds,
+      required this.onTimeChange,
+      required this.onDateChange,
+      this.is24HourMode,
+      this.minutesInterval,
+      this.secondsInterval,
+      this.isForce2Digits,
+      this.type,
+      this.selectableDayPredicate,
+      required this.timePickerSpinnerConfig});
 
   final DateTime? initialDate;
   final DateTime? firstDate;
@@ -248,6 +252,8 @@ class PickerView extends StatefulWidget {
   final bool Function(DateTime)? selectableDayPredicate;
 
   final OmniDateTimePickerType? type;
+
+  final TimePickerSpinnerConfig? timePickerSpinnerConfig;
 
   @override
   State<PickerView> createState() => _PickerViewState();
@@ -276,20 +282,20 @@ class _PickerViewState extends State<PickerView>
           ),
           if (widget.type == OmniDateTimePickerType.dateAndTime)
             Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
+              padding: const EdgeInsets.only(bottom: 0.0),
               child: TimePickerSpinner(
-                time: widget.initialDate,
-                amText: localizations.anteMeridiemAbbreviation,
-                pmText: localizations.postMeridiemAbbreviation,
-                isShowSeconds: widget.isShowSeconds ?? false,
-                is24HourMode: widget.is24HourMode ?? false,
-                minutesInterval: widget.minutesInterval ?? 1,
-                secondsInterval: widget.secondsInterval ?? 1,
-                isForce2Digits: widget.isForce2Digits ?? false,
-                onTimeChange: widget.onTimeChange,
-                dynamicSelectedStartDate: widget.selectedStartDate,
-                dynamicSelectedEndDate: widget.selectedEndDate,
-              ),
+                  time: widget.initialDate,
+                  amText: localizations.anteMeridiemAbbreviation,
+                  pmText: localizations.postMeridiemAbbreviation,
+                  isShowSeconds: widget.isShowSeconds ?? false,
+                  is24HourMode: widget.is24HourMode ?? false,
+                  minutesInterval: widget.minutesInterval ?? 1,
+                  secondsInterval: widget.secondsInterval ?? 1,
+                  isForce2Digits: widget.isForce2Digits ?? false,
+                  onTimeChange: widget.onTimeChange,
+                  dynamicSelectedStartDate: widget.selectedStartDate,
+                  dynamicSelectedEndDate: widget.selectedEndDate,
+                  timePickerSpinnerConfig: widget.timePickerSpinnerConfig),
             ),
         ],
       ),

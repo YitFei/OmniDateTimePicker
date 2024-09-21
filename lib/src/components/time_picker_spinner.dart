@@ -1,8 +1,12 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 /// This allows a value of type T or T?
 /// to be treated as a value of type T?.
@@ -100,25 +104,25 @@ class TimePickerSpinner extends StatefulWidget {
   final String? amText;
   final ValueNotifier<DateTime>? dynamicSelectedStartDate;
   final ValueNotifier<DateTime>? dynamicSelectedEndDate;
-
-  const TimePickerSpinner({
-    super.key,
-    this.time,
-    this.minutesInterval = 1,
-    this.secondsInterval = 1,
-    this.is24HourMode = true,
-    this.isShowSeconds = false,
-    this.itemHeight,
-    this.itemWidth,
-    this.alignment,
-    this.spacing,
-    this.isForce2Digits = false,
-    required this.onTimeChange,
-    this.pmText,
-    this.amText,
-    this.dynamicSelectedStartDate,
-    this.dynamicSelectedEndDate,
-  });
+  final TimePickerSpinnerConfig? timePickerSpinnerConfig;
+  const TimePickerSpinner(
+      {super.key,
+      this.time,
+      this.minutesInterval = 1,
+      this.secondsInterval = 1,
+      this.is24HourMode = true,
+      this.isShowSeconds = false,
+      this.itemHeight,
+      this.itemWidth,
+      this.alignment,
+      this.spacing,
+      this.isForce2Digits = false,
+      required this.onTimeChange,
+      this.pmText,
+      this.amText,
+      this.dynamicSelectedStartDate,
+      this.dynamicSelectedEndDate,
+      required this.timePickerSpinnerConfig});
 
   @override
   State<TimePickerSpinner> createState() => _TimePickerSpinnerState();
@@ -156,15 +160,21 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
   }
 
   double _getItemHeight() {
-    return widget.itemHeight ?? defaultItemHeight;
+    return widget.timePickerSpinnerConfig?.itemHeight ??
+        widget.itemHeight ??
+        defaultItemHeight;
   }
 
   double _getItemWidth() {
-    return widget.itemWidth ?? defaultItemWidth;
+    return widget.timePickerSpinnerConfig?.itemWidth ??
+        widget.itemWidth ??
+        defaultItemWidth;
   }
 
   double _getSpacing() {
-    return widget.spacing ?? defaultSpacing;
+    return widget.timePickerSpinnerConfig?.spacing ??
+        widget.spacing ??
+        defaultSpacing;
   }
 
   AlignmentGeometry _getAlignment() {
@@ -268,8 +278,19 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
     }
   }
 
+  late int getItemCount;
+  late int median;
+  late int getLengthToMedian;
+
   @override
   void initState() {
+    //* Time Spinning Configuration
+    median = (widget.timePickerSpinnerConfig?.getMedian ??
+        TimePickerSpinnerConfig.defaultMedian);
+    getItemCount = (widget.timePickerSpinnerConfig?.itemCount ??
+        TimePickerSpinnerConfig.defaultItemCount);
+    getLengthToMedian = (widget.timePickerSpinnerConfig?.lengthToMedian ??
+        TimePickerSpinnerConfig.defaultLengthToMedian);
     currentTime = widget.time ?? DateTime.now();
 
     widget.dynamicSelectedStartDate?.addListener(handleStartTimeChange);
@@ -282,14 +303,15 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
     currentSelectedHourIndex =
         (currentTime!.hour % _getHourCount()) + _getHourCount();
     hourController = ScrollController(
-        initialScrollOffset: (currentSelectedHourIndex - 1) * _getItemHeight());
+        initialScrollOffset:
+            (currentSelectedHourIndex - getLengthToMedian) * _getItemHeight());
 
     currentSelectedMinuteIndex =
         (currentTime!.minute / widget.minutesInterval).floor() +
             (isLoop(_getMinuteCount()) ? _getMinuteCount() : 1);
     minuteController = ScrollController(
-        initialScrollOffset:
-            (currentSelectedMinuteIndex - 1) * _getItemHeight());
+        initialScrollOffset: (currentSelectedMinuteIndex - getLengthToMedian) *
+            _getItemHeight());
 
     currentSelectedSecondIndex =
         (currentTime!.second / widget.secondsInterval).floor() +
@@ -327,7 +349,7 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
     List<Widget> contents = [
       SizedBox(
         width: _getItemWidth(),
-        height: _getItemHeight() * 3,
+        height: _getItemHeight() * getItemCount,
         child: spinner(
           hourController,
           _getHourCount(),
@@ -362,10 +384,11 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
           },
         ),
       ),
+      //* Row & Col spacing
       spacer(),
       SizedBox(
         width: _getItemWidth(),
-        height: _getItemHeight() * 3,
+        height: _getItemHeight() * getItemCount,
         child: spinner(
           minuteController,
           _getMinuteCount(),
@@ -465,7 +488,7 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
   Widget spacer() {
     return SizedBox(
       width: _getSpacing(),
-      height: _getItemHeight() * 3,
+      height: _getItemHeight() * 0,
     );
   }
 
@@ -540,10 +563,12 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
               text = text.padLeft(2, '0');
             }
 
-            TextStyle style = (selectedIndex == index
-                    ? Theme.of(context).textTheme.headlineSmall
-                    : Theme.of(context).textTheme.bodyLarge) ??
-                const TextStyle();
+            bool isSelected = selectedIndex == index;
+
+            TextStyle style = widget.timePickerSpinnerConfig?.textStyle
+                    ?.call(isSelected: isSelected) ??
+                TimePickerSpinnerConfig.defaultTextStyle(
+                    context: context, isSelected: isSelected);
 
             if (selectedStartDate != null &&
                 selectedEndDate != null &&
@@ -554,13 +579,30 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
               style = style.copyWith(color: Theme.of(context).disabledColor);
             }
 
-            return Container(
-              height: _getItemHeight(),
-              alignment: _getAlignment(),
-              child: AnimatedDefaultTextStyle(
-                style: style,
-                duration: const Duration(milliseconds: 250),
-                child: Text(text),
+            return Transform(
+              alignment: Alignment.center,
+              transform: TimePickerSpinnerConfig.getRotationX(
+                  total: max,
+                  currentIndex: index,
+                  selectedIndex: selectedIndex,
+                  unselectedHasRotation:
+                      widget.timePickerSpinnerConfig?.unselectedHasRotation,
+                  lengthToMedian: getLengthToMedian,
+                  isSelected: isSelected),
+              child: Container(
+                decoration: widget.timePickerSpinnerConfig?.spinnerBoxDeco
+                        ?.call(isSelected: isSelected) ??
+                    TimePickerSpinnerConfig.defaultSpinnerBoxDeco(
+                        isSelected: isSelected),
+                height: _getItemHeight(),
+                alignment: _getAlignment(),
+                child: AnimatedDefaultTextStyle(
+                  style: style,
+                  duration: const Duration(milliseconds: 250),
+                  child: Text(
+                    text,
+                  ),
+                ),
               ),
             );
           },
@@ -568,7 +610,8 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
           itemCount: isLoop(max) ? max * 3 : max + 2,
           physics: ItemScrollPhysics(
             customTarget: (position) {
-              final itemPosition = (position.pixels / _getItemHeight()) + 1;
+              final itemPosition =
+                  (position.pixels / _getItemHeight()) + getLengthToMedian;
               final itemNumber = getItemNumber(
                   controller, itemPosition.round(), max, interval);
 
@@ -624,7 +667,8 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
             widget.onTimeChange(getDateTime());
           }
         } else if (scrollNotification is ScrollUpdateNotification) {
-          final i = (controller.offset / _getItemHeight()).round() + 1;
+          final i = (controller.offset / _getItemHeight()).round() +
+              getLengthToMedian;
 
           if (widget.dynamicSelectedStartDate == null ||
               !shouldDisableItem(getItemNumber(controller, i, max, interval),
@@ -668,9 +712,9 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
         Positioned.fill(child: spinner),
         isScrolling
             ? Positioned.fill(
-                child: Container(
-                color: Colors.black.withOpacity(0),
-              ))
+                child: widget
+                        .timePickerSpinnerConfig?.selectedVerticalContainer ??
+                    TimePickerSpinnerConfig.defaultSelectedVerticalContainer())
             : Container()
       ],
     );
@@ -695,23 +739,40 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
             String text = index == 1
                 ? widget.amText ?? 'AM'
                 : (index == 2 ? widget.pmText ?? 'PM' : '');
-            TextStyle style = (currentSelectedAPIndex == index
-                    ? Theme.of(context).textTheme.headlineSmall
-                    : Theme.of(context).textTheme.bodyLarge) ??
-                const TextStyle();
+            bool isSelected = currentSelectedAPIndex == index;
+
+            TextStyle style = widget.timePickerSpinnerConfig?.textStyle
+                    ?.call(isSelected: isSelected) ??
+                TimePickerSpinnerConfig.defaultTextStyle(
+                    context: context, isSelected: isSelected);
 
             if (isMeridianDisabled(index, selectedStartDate, selectedEndDate)) {
               style = style.copyWith(color: Theme.of(context).disabledColor);
             }
 
-            return Container(
-              height: _getItemHeight(),
+            return Transform(
               alignment: Alignment.center,
-              child: AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 250),
-                style: style,
-                child: Text(
-                  text,
+              transform: TimePickerSpinnerConfig.getRotationX(
+                  total: -1,
+                  currentIndex: index,
+                  selectedIndex: currentSelectedAPIndex,
+                  unselectedHasRotation:
+                      widget.timePickerSpinnerConfig?.unselectedHasRotation,
+                  lengthToMedian: getLengthToMedian,
+                  isSelected: isSelected),
+              child: Container(
+                decoration: widget.timePickerSpinnerConfig?.spinnerBoxDeco
+                        ?.call(isSelected: isSelected) ??
+                    TimePickerSpinnerConfig.defaultSpinnerBoxDeco(
+                        isSelected: isSelected),
+                height: _getItemHeight(),
+                alignment: Alignment.center,
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 250),
+                  style: style,
+                  child: Text(
+                    text,
+                  ),
                 ),
               ),
             );
