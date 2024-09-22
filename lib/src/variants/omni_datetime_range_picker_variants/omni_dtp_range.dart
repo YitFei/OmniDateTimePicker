@@ -67,6 +67,8 @@ class _OmniDtpRangeState extends State<OmniDtpRange>
   late final ValueNotifier<DateTime> _selectedEndDateTime =
       ValueNotifier(widget.endInitialDate ?? DateTime.now());
 
+  final ValueNotifier<bool> showButtonRow = ValueNotifier(false);
+
   @override
   void initState() {
     _tabController = TabController(length: 2, vsync: this);
@@ -86,8 +88,12 @@ class _OmniDtpRangeState extends State<OmniDtpRange>
                       .isAtSameMomentAs(widget.endLastDate!)))),
       'endLastDate cannot less than startLastDate when forceEndDateAfterStartDate is true',
     );
-
+    _tabController.addListener(_handleTabSelection);
     super.initState();
+  }
+
+  void _handleTabSelection() {
+    showButtonRow.value = _tabController.index == 1;
   }
 
   @override
@@ -100,124 +106,138 @@ class _OmniDtpRangeState extends State<OmniDtpRange>
 
   @override
   Widget build(BuildContext context) {
+    bool hasNextButton = widget.calendarConfig?.buildNavigationButton != null;
     return ConstrainedBox(
       constraints: widget.constraints ??
           const BoxConstraints(
             maxWidth: 350,
             maxHeight: 650,
           ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CustomTabBar(
-              tabController: _tabController,
-              calendarConfig: widget.calendarConfig),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                PickerView(
-                  calendarConfig: widget.calendarConfig,
-                  type: widget.type,
-                  initialDate: widget.startInitialDate,
-                  firstDate: widget.startFirstDate,
-                  lastDate: widget.startLastDate,
-                  isShowSeconds: widget.isShowSeconds,
-                  is24HourMode: widget.is24HourMode ?? false,
-                  minutesInterval: widget.minutesInterval,
-                  secondsInterval: widget.secondsInterval,
-                  isForce2Digits: widget.isForce2Digits ?? false,
-                  onDateChange: (value) {
-                    DateTime tempDateTime = DateTime(
-                      value.year,
-                      value.month,
-                      value.day,
-                      _selectedStartDateTime.value.hour,
-                      _selectedStartDateTime.value.minute,
-                      widget.isShowSeconds ?? false
-                          ? _selectedStartDateTime.value.second
-                          : 0,
-                    );
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        CustomTabBar(
+            tabController: _tabController,
+            calendarConfig: widget.calendarConfig),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              PickerView(
+                calendarConfig: widget.calendarConfig,
+                type: widget.type,
+                initialDate: widget.startInitialDate,
+                firstDate: widget.startFirstDate,
+                lastDate: widget.startLastDate,
+                isShowSeconds: widget.isShowSeconds,
+                is24HourMode: widget.is24HourMode ?? false,
+                minutesInterval: widget.minutesInterval,
+                secondsInterval: widget.secondsInterval,
+                isForce2Digits: widget.isForce2Digits ?? false,
+                onDateChange: (value) {
+                  DateTime tempDateTime = DateTime(
+                    value.year,
+                    value.month,
+                    value.day,
+                    _selectedStartDateTime.value.hour,
+                    _selectedStartDateTime.value.minute,
+                    widget.isShowSeconds ?? false
+                        ? _selectedStartDateTime.value.second
+                        : 0,
+                  );
 
-                    _selectedStartDateTime.value = tempDateTime;
-                  },
-                  onTimeChange: (value) {
-                    DateTime tempDateTime = DateTime(
-                      _selectedStartDateTime.value.year,
-                      _selectedStartDateTime.value.month,
-                      _selectedStartDateTime.value.day,
-                      value.hour,
-                      value.minute,
-                      widget.isShowSeconds ?? false ? value.second : 0,
-                    );
+                  _selectedStartDateTime.value = tempDateTime;
+                },
+                onTimeChange: (value) {
+                  DateTime tempDateTime = DateTime(
+                    _selectedStartDateTime.value.year,
+                    _selectedStartDateTime.value.month,
+                    _selectedStartDateTime.value.day,
+                    value.hour,
+                    value.minute,
+                    widget.isShowSeconds ?? false ? value.second : 0,
+                  );
 
-                    _selectedStartDateTime.value = tempDateTime;
-                  },
-                  selectableDayPredicate: widget.selectableDayPredicate,
-                  timePickerSpinnerConfig: widget.timePickerSpinnerConfig,
-                ),
-                PickerView(
-                  calendarConfig: widget.calendarConfig,
-                  type: widget.type,
-                  selectedStartDate: widget.isForceEndDateAfterStartDate
-                      ? _selectedStartDateTime
-                      : null,
-                  selectedEndDate: widget.isForceEndDateAfterStartDate
-                      ? _selectedEndDateTime
-                      : null,
-                  initialDate: widget.endInitialDate,
-                  firstDate: widget.endFirstDate,
-                  lastDate: widget.endLastDate,
-                  isShowSeconds: widget.isShowSeconds,
-                  is24HourMode: widget.is24HourMode ?? false,
-                  minutesInterval: widget.minutesInterval,
-                  secondsInterval: widget.secondsInterval,
-                  isForce2Digits: widget.isForce2Digits ?? false,
-                  onDateChange: (value) {
-                    DateTime tempDateTime = DateTime(
-                      value.year,
-                      value.month,
-                      value.day,
-                      _selectedEndDateTime.value.hour,
-                      _selectedEndDateTime.value.minute,
-                      widget.isShowSeconds ?? false
-                          ? _selectedEndDateTime.value.second
-                          : 0,
-                    );
+                  _selectedStartDateTime.value = tempDateTime;
+                },
+                selectableDayPredicate: widget.selectableDayPredicate,
+                timePickerSpinnerConfig: widget.timePickerSpinnerConfig,
+              ),
+              PickerView(
+                calendarConfig: widget.calendarConfig,
+                type: widget.type,
+                selectedStartDate: widget.isForceEndDateAfterStartDate
+                    ? _selectedStartDateTime
+                    : null,
+                selectedEndDate: widget.isForceEndDateAfterStartDate
+                    ? _selectedEndDateTime
+                    : null,
+                initialDate: widget.endInitialDate,
+                firstDate: widget.endFirstDate,
+                lastDate: widget.endLastDate,
+                isShowSeconds: widget.isShowSeconds,
+                is24HourMode: widget.is24HourMode ?? false,
+                minutesInterval: widget.minutesInterval,
+                secondsInterval: widget.secondsInterval,
+                isForce2Digits: widget.isForce2Digits ?? false,
+                onDateChange: (value) {
+                  DateTime tempDateTime = DateTime(
+                    value.year,
+                    value.month,
+                    value.day,
+                    _selectedEndDateTime.value.hour,
+                    _selectedEndDateTime.value.minute,
+                    widget.isShowSeconds ?? false
+                        ? _selectedEndDateTime.value.second
+                        : 0,
+                  );
 
-                    _selectedEndDateTime.value = tempDateTime;
-                  },
-                  onTimeChange: (value) {
-                    DateTime tempDateTime = DateTime(
-                      _selectedEndDateTime.value.year,
-                      _selectedEndDateTime.value.month,
-                      _selectedEndDateTime.value.day,
-                      value.hour,
-                      value.minute,
-                      widget.isShowSeconds ?? false ? value.second : 0,
-                    );
+                  _selectedEndDateTime.value = tempDateTime;
+                },
+                onTimeChange: (value) {
+                  DateTime tempDateTime = DateTime(
+                    _selectedEndDateTime.value.year,
+                    _selectedEndDateTime.value.month,
+                    _selectedEndDateTime.value.day,
+                    value.hour,
+                    value.minute,
+                    widget.isShowSeconds ?? false ? value.second : 0,
+                  );
 
-                    _selectedEndDateTime.value = tempDateTime;
-                  },
-                  selectableDayPredicate: widget.selectableDayPredicate,
-                  timePickerSpinnerConfig: widget.timePickerSpinnerConfig,
-                ),
-              ],
-            ),
+                  _selectedEndDateTime.value = tempDateTime;
+                },
+                selectableDayPredicate: widget.selectableDayPredicate,
+                timePickerSpinnerConfig: widget.timePickerSpinnerConfig,
+              ),
+            ],
           ),
-          ButtonRow(onSavePressed: () {
-            Navigator.pop<List<DateTime>>(context, [
-              _selectedStartDateTime.value,
-              _selectedEndDateTime.value
-                          .isBefore(_selectedStartDateTime.value) &&
-                      widget.isForceEndDateAfterStartDate
-                  ? _selectedStartDateTime.value.copyWith()
-                  : _selectedEndDateTime.value
-            ]);
-          }),
-        ],
-      ),
+        ),
+        if (hasNextButton)
+          ValueListenableBuilder(
+              valueListenable: showButtonRow,
+              builder: ((context, showButtonRow, child) {
+                return showButtonRow
+                    ? buildRowButton()
+                    : (widget.calendarConfig?.buildNavigationButton?.call(
+                          onPressed: () {
+                            _tabController.index = 1;
+                          },
+                        ) ??
+                        Container());
+              })),
+        if (hasNextButton == false) buildRowButton()
+      ]),
     );
+  }
+
+  Widget buildRowButton() {
+    return ButtonRow(onSavePressed: () {
+      Navigator.pop<List<DateTime>>(context, [
+        _selectedStartDateTime.value,
+        _selectedEndDateTime.value.isBefore(_selectedStartDateTime.value) &&
+                widget.isForceEndDateAfterStartDate
+            ? _selectedStartDateTime.value.copyWith()
+            : _selectedEndDateTime.value
+      ]);
+    });
   }
 }
 

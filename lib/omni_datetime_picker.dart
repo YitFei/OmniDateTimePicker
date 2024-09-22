@@ -298,6 +298,9 @@ class CalendarConfig {
 
   final double? dayPickerRowHeight;
   final bool dayPickerFlexHeight;
+
+  final Widget? Function({required Function() onPressed})?
+      buildNavigationButton;
   CalendarConfig(
       {this.tabBarHeight,
       this.subHeaderHeight,
@@ -309,5 +312,6 @@ class CalendarConfig {
       this.yearPickerRowSpacing,
       this.calendarDayPickerColor,
       this.dayPickerRowHeight,
+      this.buildNavigationButton,
       this.dayPickerFlexHeight = false});
 }
