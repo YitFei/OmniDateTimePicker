@@ -113,10 +113,19 @@ class MyHomePage extends StatelessWidget {
                 //TODO for layout testing
                 List<DateTime>? dateTimeList =
                     await showOmniDateTimeRangePicker(
+                  calendarConfig: CalendarConfig(
+                      yearPickerRowHeight: 30,
+                      yearPickerPadding: 5,
+                      yearPickerColumnCount: 3,
+                      tabBarHeight: 30,
+                      subHeaderHeight: 30,
+                      yearItemBorderRadius: 8,
+                      yearItemSize: Size(50, 40)),
+                  constraints: BoxConstraints(maxHeight: 500),
                   timePickerSpinnerConfig: TimePickerSpinnerConfig(
                     itemHeight: 30,
                     spacing: 20,
-                    itemCount: 5,
+                    itemCount: 3,
                     selectedVerticalContainer: Container(
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.1),
@@ -133,7 +142,7 @@ class MyHomePage extends StatelessWidget {
                               color: isSelected
                                   ? Colors.black
                                   : Colors.grey.withOpacity(0.8),
-                              fontSize: isSelected ? 15 : 12);
+                              fontSize: isSelected ? 12 : 12);
                       return style;
                     },
                     spinnerBoxDeco: ({required isSelected}) {
@@ -145,23 +154,37 @@ class MyHomePage extends StatelessWidget {
                   ),
                   context: context,
                   theme: Theme.of(context).copyWith(
-                    dialogBackgroundColor: Colors.white,
-                    textTheme: Theme.of(context).textTheme.copyWith(
-                        bodyLarge: TextStyle(fontSize: 12, color: Colors.black),
-                        headlineSmall: TextStyle(
-                            fontSize: 15,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w400)),
-                    disabledColor: Colors.red,
-                    dialogTheme: DialogTheme(
-                      backgroundColor: Colors.white,
-                      surfaceTintColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(8), // Less rounded corners
+                      tabBarTheme: TabBarTheme(
+                        indicatorSize: TabBarIndicatorSize.label,
                       ),
-                    ),
-                  ),
+                      dialogBackgroundColor: Colors.white,
+                      textTheme: Theme.of(context).textTheme.copyWith(
+                          bodyLarge:
+                              TextStyle(fontSize: 10, color: Colors.black),
+                          //* day picker text style
+                          bodySmall:
+                              TextStyle(fontSize: 10, color: Colors.black),
+                          //* subheader text style
+                          titleSmall:
+                              TextStyle(fontSize: 10, color: Colors.black),
+                          headlineSmall: TextStyle(
+                              fontSize: 15,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w400)),
+                      disabledColor: Colors.red,
+                      dialogTheme: DialogTheme(
+                        backgroundColor: Colors.white,
+                        surfaceTintColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(8), // Less rounded corners
+                        ),
+                      ),
+                      textButtonTheme: TextButtonThemeData(
+                          style: ButtonStyle(
+                        visualDensity:
+                            VisualDensity(horizontal: -4, vertical: -4),
+                      ))),
                 );
 
                 print("Start dateTime: ${dateTimeList?[0]}");

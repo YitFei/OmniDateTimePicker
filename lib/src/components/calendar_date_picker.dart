@@ -4,10 +4,13 @@
 
 import 'dart:math' as math;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 const Duration _monthScrollDuration = Duration(milliseconds: 200);
 
@@ -73,18 +76,19 @@ class CalendarDatePicker extends StatefulWidget {
   ///
   /// If [selectableDayPredicate] is non-null, it must return `true` for the
   /// [initialDate].
-  CalendarDatePicker({
-    super.key,
-    required DateTime initialDate,
-    required DateTime firstDate,
-    required DateTime lastDate,
-    DateTime? currentDate,
-    required this.onDateChanged,
-    this.onDisplayedMonthChanged,
-    this.initialCalendarMode = DatePickerMode.day,
-    this.selectableDayPredicate,
-    this.dynamicFirstDate,
-  })  : initialDate = DateUtils.dateOnly(initialDate),
+  CalendarDatePicker(
+      {super.key,
+      required DateTime initialDate,
+      required DateTime firstDate,
+      required DateTime lastDate,
+      DateTime? currentDate,
+      required this.onDateChanged,
+      this.onDisplayedMonthChanged,
+      this.initialCalendarMode = DatePickerMode.day,
+      this.selectableDayPredicate,
+      this.dynamicFirstDate,
+      required this.calendarConfig})
+      : initialDate = DateUtils.dateOnly(initialDate),
         firstDate = DateUtils.dateOnly(firstDate),
         lastDate = DateUtils.dateOnly(lastDate),
         currentDate = DateUtils.dateOnly(currentDate ?? DateTime.now()) {
@@ -133,6 +137,8 @@ class CalendarDatePicker extends StatefulWidget {
 
   /// Function to provide full control over which dates in the calendar can be selected.
   final SelectableDayPredicate? selectableDayPredicate;
+
+  final CalendarConfig? calendarConfig;
 
   @override
   State<CalendarDatePicker> createState() => _CalendarDatePickerState();
@@ -289,10 +295,12 @@ class _CalendarDatePickerState extends State<CalendarDatePicker> {
           onChanged: _handleDayChanged,
           onDisplayedMonthChanged: _handleMonthChanged,
           selectableDayPredicate: widget.selectableDayPredicate,
+          calenderConfig: widget.calendarConfig,
         );
       case DatePickerMode.year:
         return Padding(
-          padding: const EdgeInsets.only(top: _subHeaderHeight),
+          padding: EdgeInsets.only(
+              top: widget.calendarConfig?.subHeaderHeight ?? _subHeaderHeight),
           child: YearPicker(
             key: _yearPickerKey,
             currentDate: widget.currentDate,
@@ -301,6 +309,7 @@ class _CalendarDatePickerState extends State<CalendarDatePicker> {
             initialDate: _currentDisplayedMonthDate,
             selectedDate: selectedDate,
             onChanged: _handleYearChanged,
+            calendarConfig: widget.calendarConfig,
           ),
         );
     }
@@ -333,6 +342,7 @@ class _CalendarDatePickerState extends State<CalendarDatePicker> {
         ),
         // Put the mode toggle button on top so that it won't be covered up by the _MonthPicker
         _DatePickerModeToggleButton(
+          calendarConfig: widget.calendarConfig,
           mode: _mode,
           title: _localizations.formatMonthYear(_currentDisplayedMonthDate),
           onTitlePressed: () {
@@ -356,6 +366,7 @@ class _DatePickerModeToggleButton extends StatefulWidget {
     required this.mode,
     required this.title,
     required this.onTitlePressed,
+    required this.calendarConfig,
   });
 
   /// The current display of the calendar picker.
@@ -366,6 +377,8 @@ class _DatePickerModeToggleButton extends StatefulWidget {
 
   /// The callback when the title is pressed.
   final VoidCallback onTitlePressed;
+
+  final CalendarConfig? calendarConfig;
 
   @override
   _DatePickerModeToggleButtonState createState() =>
@@ -408,9 +421,11 @@ class _DatePickerModeToggleButtonState
     final TextTheme textTheme = Theme.of(context).textTheme;
     final Color controlColor = colorScheme.onSurface.withOpacity(0.60);
 
+    double subHeaderHeight =
+        widget.calendarConfig?.subHeaderHeight ?? _subHeaderHeight;
     return Container(
       padding: const EdgeInsetsDirectional.only(start: 16, end: 4),
-      height: _subHeaderHeight,
+      height: subHeaderHeight,
       child: Row(
         children: <Widget>[
           Flexible(
@@ -419,7 +434,7 @@ class _DatePickerModeToggleButtonState
               excludeSemantics: true,
               button: true,
               child: SizedBox(
-                height: _subHeaderHeight,
+                height: subHeaderHeight,
                 child: InkWell(
                   onTap: widget.onTitlePressed,
                   child: Padding(
@@ -475,6 +490,7 @@ class _MonthPicker extends StatefulWidget {
     required this.selectedDate,
     required this.onChanged,
     required this.onDisplayedMonthChanged,
+    required this.calenderConfig,
     this.selectableDayPredicate,
   })  : assert(!firstDate.isAfter(lastDate)),
         assert(!selectedDate.isBefore(firstDate)),
@@ -511,6 +527,8 @@ class _MonthPicker extends StatefulWidget {
 
   /// Optional user supplied predicate function to customize selectable days.
   final SelectableDayPredicate? selectableDayPredicate;
+
+  final CalendarConfig? calenderConfig;
 
   @override
   _MonthPickerState createState() => _MonthPickerState();
@@ -785,6 +803,7 @@ class _MonthPickerState extends State<_MonthPicker> {
       lastDate: widget.lastDate,
       displayedMonth: month,
       selectableDayPredicate: widget.selectableDayPredicate,
+      calendarConfig: widget.calenderConfig,
     );
   }
 
@@ -887,6 +906,7 @@ class _DayPicker extends StatefulWidget {
     required this.selectedDate,
     required this.onChanged,
     this.selectableDayPredicate,
+    required this.calendarConfig,
   })  : assert(!firstDate.isAfter(lastDate)),
         assert(!selectedDate.isBefore(firstDate)),
         assert(!selectedDate.isAfter(lastDate));
@@ -918,6 +938,7 @@ class _DayPicker extends StatefulWidget {
   /// Optional user supplied predicate function to customize selectable days.
   final SelectableDayPredicate? selectableDayPredicate;
 
+  final CalendarConfig? calendarConfig;
   @override
   _DayPickerState createState() => _DayPickerState();
 }
@@ -1164,6 +1185,7 @@ class YearPicker extends StatefulWidget {
     DateTime? initialDate,
     required this.selectedDate,
     required this.onChanged,
+    required this.calendarConfig,
     this.dragStartBehavior = DragStartBehavior.start,
   })  : assert(!firstDate.isAfter(lastDate)),
         currentDate = DateUtils.dateOnly(currentDate ?? DateTime.now()),
@@ -1194,6 +1216,7 @@ class YearPicker extends StatefulWidget {
   /// {@macro flutter.widgets.scrollable.dragStartBehavior}
   final DragStartBehavior dragStartBehavior;
 
+  final CalendarConfig? calendarConfig;
   @override
   State<YearPicker> createState() => _YearPickerState();
 }
@@ -1221,10 +1244,16 @@ class _YearPickerState extends State<YearPicker> {
 
   double _scrollOffsetForYear(DateTime date) {
     final int initialYearIndex = date.year - widget.firstDate.year;
-    final int initialYearRow = initialYearIndex ~/ _yearPickerColumnCount;
+    final int initialYearRow = initialYearIndex ~/
+        (widget.calendarConfig?.yearPickerColumnCount ??
+            _yearPickerColumnCount);
     // Move the offset down by 2 rows to approximately center it.
     final int centeredYearRow = initialYearRow - 2;
-    return _itemCount < minYears ? 0 : centeredYearRow * _yearPickerRowHeight;
+    return _itemCount < minYears
+        ? 0
+        : centeredYearRow *
+            (widget.calendarConfig?.yearPickerRowHeight ??
+                _yearPickerRowHeight);
   }
 
   Widget _buildYearItem(BuildContext context, int index) {
@@ -1257,22 +1286,26 @@ class _YearPickerState extends State<YearPicker> {
     if (isSelected) {
       decoration = BoxDecoration(
         color: colorScheme.primary,
-        borderRadius: BorderRadius.circular(decorationHeight / 2),
+        borderRadius: BorderRadius.circular(
+            widget.calendarConfig?.yearItemBorderRadius ??
+                decorationHeight / 2),
       );
     } else if (isCurrentYear && !isDisabled) {
       decoration = BoxDecoration(
         border: Border.all(
           color: colorScheme.primary,
         ),
-        borderRadius: BorderRadius.circular(decorationHeight / 2),
+        borderRadius: BorderRadius.circular(
+            widget.calendarConfig?.yearItemBorderRadius ??
+                decorationHeight / 2),
       );
     }
 
     Widget yearItem = Center(
       child: Container(
         decoration: decoration,
-        height: decorationHeight,
-        width: decorationWidth,
+        height: widget.calendarConfig?.yearItemSize?.height ?? decorationHeight,
+        width: widget.calendarConfig?.yearItemSize?.width ?? decorationWidth,
         child: Center(
           child: Semantics(
             selected: isSelected,
@@ -1312,10 +1345,13 @@ class _YearPickerState extends State<YearPicker> {
           child: GridView.builder(
             controller: _scrollController,
             dragStartBehavior: widget.dragStartBehavior,
-            gridDelegate: _yearPickerGridDelegate,
+            gridDelegate:
+                _YearPickerGridDelegate(calendarConfig: widget.calendarConfig),
             itemBuilder: _buildYearItem,
             itemCount: math.max(_itemCount, minYears),
-            padding: const EdgeInsets.symmetric(horizontal: _yearPickerPadding),
+            padding: EdgeInsets.symmetric(
+                horizontal: widget.calendarConfig?.yearPickerPadding ??
+                    _yearPickerPadding),
           ),
         ),
         const Divider(),
@@ -1325,19 +1361,26 @@ class _YearPickerState extends State<YearPicker> {
 }
 
 class _YearPickerGridDelegate extends SliverGridDelegate {
-  const _YearPickerGridDelegate();
+  final CalendarConfig? calendarConfig;
+  const _YearPickerGridDelegate({required this.calendarConfig});
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
     final double tileWidth = (constraints.crossAxisExtent -
-            (_yearPickerColumnCount - 1) * _yearPickerRowSpacing) /
-        _yearPickerColumnCount;
+            ((calendarConfig?.yearPickerColumnCount ?? _yearPickerColumnCount) -
+                    1) *
+                (calendarConfig?.yearPickerRowSpacing ??
+                    _yearPickerRowSpacing)) /
+        (calendarConfig?.yearPickerColumnCount ?? _yearPickerColumnCount);
     return SliverGridRegularTileLayout(
       childCrossAxisExtent: tileWidth,
-      childMainAxisExtent: _yearPickerRowHeight,
-      crossAxisCount: _yearPickerColumnCount,
+      childMainAxisExtent:
+          calendarConfig?.yearPickerRowHeight ?? _yearPickerRowHeight,
+      crossAxisCount:
+          calendarConfig?.yearPickerColumnCount ?? _yearPickerColumnCount,
       crossAxisStride: tileWidth + _yearPickerRowSpacing,
-      mainAxisStride: _yearPickerRowHeight,
+      mainAxisStride:
+          calendarConfig?.yearPickerRowHeight ?? _yearPickerRowHeight,
       reverseCrossAxis: axisDirectionIsReversed(constraints.crossAxisDirection),
     );
   }
@@ -1346,5 +1389,5 @@ class _YearPickerGridDelegate extends SliverGridDelegate {
   bool shouldRelayout(_YearPickerGridDelegate oldDelegate) => false;
 }
 
-const _YearPickerGridDelegate _yearPickerGridDelegate =
-    _YearPickerGridDelegate();
+// const _YearPickerGridDelegate _yearPickerGridDelegate =
+//     _YearPickerGridDelegate();

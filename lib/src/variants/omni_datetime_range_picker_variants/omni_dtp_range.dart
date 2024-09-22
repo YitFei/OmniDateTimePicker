@@ -26,7 +26,7 @@ class OmniDtpRange extends StatefulWidget {
     this.type,
     this.selectableDayPredicate,
     this.defaultView = DefaultView.start,
-
+    required this.calendarConfig,
     //* Time Spinner
     required this.timePickerSpinnerConfig,
   }) : isForceEndDateAfterStartDate = isForceEndDateAfterStartDate ?? false;
@@ -49,6 +49,8 @@ class OmniDtpRange extends StatefulWidget {
   final OmniDateTimePickerType? type;
   final bool Function(DateTime)? selectableDayPredicate;
   final DefaultView defaultView;
+
+  final CalendarConfig? calendarConfig;
 
   //* Time Spinner
   final TimePickerSpinnerConfig? timePickerSpinnerConfig;
@@ -107,12 +109,15 @@ class _OmniDtpRangeState extends State<OmniDtpRange>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CustomTabBar(tabController: _tabController),
+          CustomTabBar(
+              tabController: _tabController,
+              calendarConfig: widget.calendarConfig),
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
                 PickerView(
+                  calendarConfig: widget.calendarConfig,
                   type: widget.type,
                   initialDate: widget.startInitialDate,
                   firstDate: widget.startFirstDate,
@@ -152,6 +157,7 @@ class _OmniDtpRangeState extends State<OmniDtpRange>
                   timePickerSpinnerConfig: widget.timePickerSpinnerConfig,
                 ),
                 PickerView(
+                  calendarConfig: widget.calendarConfig,
                   type: widget.type,
                   selectedStartDate: widget.isForceEndDateAfterStartDate
                       ? _selectedStartDateTime
@@ -232,6 +238,7 @@ class PickerView extends StatefulWidget {
       this.isForce2Digits,
       this.type,
       this.selectableDayPredicate,
+      required this.calendarConfig,
       required this.timePickerSpinnerConfig});
 
   final DateTime? initialDate;
@@ -254,6 +261,7 @@ class PickerView extends StatefulWidget {
   final OmniDateTimePickerType? type;
 
   final TimePickerSpinnerConfig? timePickerSpinnerConfig;
+  final CalendarConfig? calendarConfig;
 
   @override
   State<PickerView> createState() => _PickerViewState();
@@ -268,11 +276,13 @@ class _PickerViewState extends State<PickerView>
   Widget build(BuildContext context) {
     super.build(context);
     final localizations = MaterialLocalizations.of(context);
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Calendar(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Expanded(
+          flex: 2,
+          child: Calendar(
+            calendarConfig: widget.calendarConfig,
             initialDate: widget.initialDate,
             firstDate: widget.firstDate,
             lastDate: widget.lastDate,
@@ -280,25 +290,24 @@ class _PickerViewState extends State<PickerView>
             dynamicFirstDate: widget.selectedStartDate,
             selectableDayPredicate: widget.selectableDayPredicate,
           ),
-          if (widget.type == OmniDateTimePickerType.dateAndTime)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 0.0),
-              child: TimePickerSpinner(
-                  time: widget.initialDate,
-                  amText: localizations.anteMeridiemAbbreviation,
-                  pmText: localizations.postMeridiemAbbreviation,
-                  isShowSeconds: widget.isShowSeconds ?? false,
-                  is24HourMode: widget.is24HourMode ?? false,
-                  minutesInterval: widget.minutesInterval ?? 1,
-                  secondsInterval: widget.secondsInterval ?? 1,
-                  isForce2Digits: widget.isForce2Digits ?? false,
-                  onTimeChange: widget.onTimeChange,
-                  dynamicSelectedStartDate: widget.selectedStartDate,
-                  dynamicSelectedEndDate: widget.selectedEndDate,
-                  timePickerSpinnerConfig: widget.timePickerSpinnerConfig),
-            ),
-        ],
-      ),
+        ),
+        if (widget.type == OmniDateTimePickerType.dateAndTime)
+          Expanded(
+            child: TimePickerSpinner(
+                time: widget.initialDate,
+                amText: localizations.anteMeridiemAbbreviation,
+                pmText: localizations.postMeridiemAbbreviation,
+                isShowSeconds: widget.isShowSeconds ?? false,
+                is24HourMode: widget.is24HourMode ?? false,
+                minutesInterval: widget.minutesInterval ?? 1,
+                secondsInterval: widget.secondsInterval ?? 1,
+                isForce2Digits: widget.isForce2Digits ?? false,
+                onTimeChange: widget.onTimeChange,
+                dynamicSelectedStartDate: widget.selectedStartDate,
+                dynamicSelectedEndDate: widget.selectedEndDate,
+                timePickerSpinnerConfig: widget.timePickerSpinnerConfig),
+          ),
+      ],
     );
   }
 }

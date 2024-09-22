@@ -22,6 +22,7 @@ class OmniDateTimeRangePicker extends StatelessWidget {
       required this.type,
       this.selectableDayPredicate,
       this.defaultView = DefaultView.start,
+      required this.calendarConfig,
       required this.timePickerSpinnerConfig});
 
   final DateTime? startInitialDate;
@@ -43,6 +44,7 @@ class OmniDateTimeRangePicker extends StatelessWidget {
   final bool Function(DateTime)? selectableDayPredicate;
   final DefaultView defaultView;
 
+  final CalendarConfig? calendarConfig;
   final TimePickerSpinnerConfig? timePickerSpinnerConfig;
 
   @override
@@ -57,6 +59,7 @@ class OmniDateTimeRangePicker extends StatelessWidget {
                 )
               : null,
       child: OmniDtpRange(
+        calendarConfig: calendarConfig,
         startInitialDate: startInitialDate,
         startFirstDate: startFirstDate,
         startLastDate: startLastDate,

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 class CustomTabBar extends StatelessWidget {
-  const CustomTabBar({super.key, required this.tabController});
+  const CustomTabBar(
+      {super.key, required this.tabController, required this.calendarConfig});
 
   final TabController tabController;
+  final CalendarConfig? calendarConfig;
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +27,14 @@ class CustomTabBar extends StatelessWidget {
           : Theme.of(context).colorScheme.primary,
       tabs: [
         Tab(
-          text: localizations.dateRangeStartLabel,
+          height: calendarConfig?.tabBarHeight,
+          child: Text(localizations.dateRangeStartLabel,
+              style: Theme.of(context).textTheme.headlineSmall),
         ),
         Tab(
-          text: localizations.dateRangeEndLabel,
+          height: calendarConfig?.tabBarHeight,
+          child: Text(localizations.dateRangeEndLabel,
+              style: Theme.of(context).textTheme.headlineSmall),
         ),
       ],
     );

@@ -21,6 +21,7 @@ class OmniDtpBasic extends StatelessWidget {
     this.type,
     this.selectableDayPredicate,
     required this.timePickerSpinnerConfig,
+    required this.calendarConfig,
   });
 
   final Widget? separator;
@@ -38,6 +39,7 @@ class OmniDtpBasic extends StatelessWidget {
   final bool Function(DateTime)? selectableDayPredicate;
   final TimePickerSpinnerConfig? timePickerSpinnerConfig;
 
+  final CalendarConfig? calendarConfig;
   @override
   Widget build(BuildContext context) {
     final localizations = MaterialLocalizations.of(context);
@@ -57,6 +59,7 @@ class OmniDtpBasic extends StatelessWidget {
             if (title != null) title!,
             if (title != null && separator != null) separator!,
             Calendar(
+              calendarConfig: calendarConfig,
               initialDate: initialDate,
               firstDate: firstDate,
               lastDate: lastDate,

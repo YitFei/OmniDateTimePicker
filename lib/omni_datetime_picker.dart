@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 /// A DateTime picker to pick a single DateTime or a DateTime range.
 ///
 /// Use [showOmniDateTimePicker] to pick a single DateTime.
@@ -9,6 +10,7 @@ library omni_datetime_picker;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
 import 'package:omni_datetime_picker/src/omni_datetime_picker.dart';
 import 'package:omni_datetime_picker/src/omni_datetime_range_picker.dart';
 
@@ -37,6 +39,7 @@ Future<DateTime?> showOmniDateTimePicker(
     OmniDateTimePickerType type = OmniDateTimePickerType.dateAndTime,
     final bool Function(DateTime)? selectableDayPredicate,
     ThemeData? theme,
+    CalendarConfig? calendarConfig,
     TimePickerSpinnerConfig? timePickerSpinnerConfig}) {
   return showGeneralDialog(
     context: context,
@@ -59,6 +62,7 @@ Future<DateTime?> showOmniDateTimePicker(
       return Theme(
         data: theme ?? Theme.of(context),
         child: OmniDateTimePicker(
+          calendarConfig: calendarConfig,
           timePickerSpinnerConfig: timePickerSpinnerConfig,
           separator: separator,
           title: title,
@@ -110,6 +114,7 @@ Future<List<DateTime>?> showOmniDateTimeRangePicker({
   bool Function(DateTime)? selectableDayPredicate,
   ThemeData? theme,
   DefaultView defaultView = DefaultView.start,
+  CalendarConfig? calendarConfig,
   TimePickerSpinnerConfig? timePickerSpinnerConfig,
 }) {
   return showGeneralDialog(
@@ -150,6 +155,7 @@ Future<List<DateTime>?> showOmniDateTimeRangePicker({
           constraints: constraints,
           selectableDayPredicate: selectableDayPredicate,
           defaultView: defaultView,
+          calendarConfig: calendarConfig,
           timePickerSpinnerConfig: timePickerSpinnerConfig,
         ),
       );
@@ -272,4 +278,26 @@ class TimePickerSpinnerConfig {
       color: Colors.black.withOpacity(0),
     );
   }
+}
+
+class CalendarConfig {
+  final double? tabBarHeight;
+  final double? subHeaderHeight;
+  final Size? yearItemSize;
+  final double? yearItemBorderRadius;
+
+  final int? yearPickerColumnCount;
+  final double? yearPickerPadding;
+  final double? yearPickerRowHeight;
+  final double? yearPickerRowSpacing;
+  CalendarConfig({
+    this.tabBarHeight,
+    this.subHeaderHeight,
+    this.yearItemSize,
+    this.yearItemBorderRadius,
+    this.yearPickerColumnCount,
+    this.yearPickerPadding,
+    this.yearPickerRowHeight,
+    this.yearPickerRowSpacing,
+  });
 }
