@@ -478,10 +478,13 @@ class _TimePickerSpinnerState extends State<TimePickerSpinner> {
       ));
     }
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: contents,
+    return Container(
+      color: widget.timePickerSpinnerConfig?.spinnerColor,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: contents,
+      ),
     );
   }
 

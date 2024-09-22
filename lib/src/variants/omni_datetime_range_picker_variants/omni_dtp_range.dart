@@ -280,7 +280,6 @@ class _PickerViewState extends State<PickerView>
       mainAxisSize: MainAxisSize.min,
       children: [
         Expanded(
-          flex: 2,
           child: Calendar(
             calendarConfig: widget.calendarConfig,
             initialDate: widget.initialDate,
@@ -292,7 +291,9 @@ class _PickerViewState extends State<PickerView>
           ),
         ),
         if (widget.type == OmniDateTimePickerType.dateAndTime)
-          Expanded(
+          Padding(
+            padding: widget.timePickerSpinnerConfig?.spinnerPadding ??
+                EdgeInsets.zero,
             child: TimePickerSpinner(
                 time: widget.initialDate,
                 amText: localizations.anteMeridiemAbbreviation,

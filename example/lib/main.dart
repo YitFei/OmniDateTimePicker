@@ -114,15 +114,20 @@ class MyHomePage extends StatelessWidget {
                 List<DateTime>? dateTimeList =
                     await showOmniDateTimeRangePicker(
                   calendarConfig: CalendarConfig(
+                      dayPickerFlexHeight: true,
+                      dayPickerRowHeight: 40,
+                      calendarDayPickerColor: Colors.white.withOpacity(0.1),
                       yearPickerRowHeight: 30,
                       yearPickerPadding: 5,
                       yearPickerColumnCount: 3,
                       tabBarHeight: 30,
-                      subHeaderHeight: 30,
+                      subHeaderHeight: 40,
                       yearItemBorderRadius: 8,
                       yearItemSize: Size(50, 40)),
-                  constraints: BoxConstraints(maxHeight: 500),
+                  constraints: BoxConstraints(maxHeight: 600),
                   timePickerSpinnerConfig: TimePickerSpinnerConfig(
+                    spinnerColor: Colors.greenAccent.withOpacity(0.05),
+                    spinnerPadding: EdgeInsets.symmetric(vertical: 0),
                     itemHeight: 30,
                     spacing: 20,
                     itemCount: 3,
@@ -163,10 +168,10 @@ class MyHomePage extends StatelessWidget {
                               TextStyle(fontSize: 10, color: Colors.black),
                           //* day picker text style
                           bodySmall:
-                              TextStyle(fontSize: 10, color: Colors.black),
+                              TextStyle(fontSize: 12, color: Colors.black),
                           //* subheader text style
                           titleSmall:
-                              TextStyle(fontSize: 10, color: Colors.black),
+                              TextStyle(fontSize: 14, color: Colors.black),
                           headlineSmall: TextStyle(
                               fontSize: 15,
                               color: Colors.black,

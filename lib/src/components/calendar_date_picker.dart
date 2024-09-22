@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:math' as math;
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +16,11 @@ const Duration _monthScrollDuration = Duration(milliseconds: 200);
 const double _dayPickerRowHeight = 42.0;
 const int _maxDayPickerRowCount = 6; // A 31 day month that starts on Saturday.
 // One extra row for the day-of-week header.
-const double _maxDayPickerHeight =
-    _dayPickerRowHeight * (_maxDayPickerRowCount + 1);
+double _maxDayPickerHeight(double? dayPickerRowHeight) {
+  return (dayPickerRowHeight ?? _dayPickerRowHeight) *
+      (_maxDayPickerRowCount + 1);
+}
+
 const double _monthPickerHorizontalPadding = 8.0;
 
 const int _yearPickerColumnCount = 3;
@@ -153,6 +155,8 @@ class _CalendarDatePickerState extends State<CalendarDatePicker> {
   final GlobalKey _yearPickerKey = GlobalKey();
   late MaterialLocalizations _localizations;
   late TextDirection _textDirection;
+  late double subHeaderHeight;
+  late double dayPickerRowHeight;
 
   void changeDateWithFirstDate() {
     if (widget.dynamicFirstDate != null &&
@@ -178,6 +182,11 @@ class _CalendarDatePickerState extends State<CalendarDatePicker> {
     _selectedDate = widget.initialDate;
 
     widget.dynamicFirstDate?.addListener(changeDateWithFirstDate);
+    subHeaderHeight =
+        widget.calendarConfig?.subHeaderHeight ?? _subHeaderHeight;
+
+    dayPickerRowHeight =
+        widget.calendarConfig?.dayPickerRowHeight ?? _dayPickerRowHeight;
   }
 
   @override
@@ -299,8 +308,7 @@ class _CalendarDatePickerState extends State<CalendarDatePicker> {
         );
       case DatePickerMode.year:
         return Padding(
-          padding: EdgeInsets.only(
-              top: widget.calendarConfig?.subHeaderHeight ?? _subHeaderHeight),
+          padding: EdgeInsets.only(top: subHeaderHeight),
           child: YearPicker(
             key: _yearPickerKey,
             currentDate: widget.currentDate,
@@ -320,10 +328,12 @@ class _CalendarDatePickerState extends State<CalendarDatePicker> {
     assert(debugCheckHasMaterial(context));
     assert(debugCheckHasMaterialLocalizations(context));
     assert(debugCheckHasDirectionality(context));
+
     return Stack(
       children: <Widget>[
         SizedBox(
-          height: _subHeaderHeight + _maxDayPickerHeight,
+          height: subHeaderHeight +
+              _maxDayPickerHeight(widget.calendarConfig?.dayPickerRowHeight),
           child: widget.dynamicFirstDate != null
               ? ValueListenableBuilder(
                   valueListenable: widget.dynamicFirstDate!,
@@ -423,6 +433,7 @@ class _DatePickerModeToggleButtonState
 
     double subHeaderHeight =
         widget.calendarConfig?.subHeaderHeight ?? _subHeaderHeight;
+
     return Container(
       padding: const EdgeInsetsDirectional.only(start: 16, end: 4),
       height: subHeaderHeight,
@@ -544,6 +555,7 @@ class _MonthPickerState extends State<_MonthPicker> {
   Map<Type, Action<Intent>>? _actionMap;
   late FocusNode _dayGridFocus;
   DateTime? _focusedDay;
+  late double subHeaderHeight;
 
   @override
   void initState() {
@@ -570,6 +582,8 @@ class _MonthPickerState extends State<_MonthPicker> {
           onInvoke: _handleDirectionFocus),
     };
     _dayGridFocus = FocusNode(debugLabel: 'Day Grid');
+    subHeaderHeight =
+        widget.calenderConfig?.subHeaderHeight ?? _subHeaderHeight;
   }
 
   @override
@@ -817,11 +831,13 @@ class _MonthPickerState extends State<_MonthPicker> {
         children: <Widget>[
           Container(
             padding: const EdgeInsetsDirectional.only(start: 16, end: 4),
-            height: _subHeaderHeight,
+            height: subHeaderHeight,
             child: Row(
               children: <Widget>[
                 const Spacer(),
                 IconButton(
+                  visualDensity:
+                      const VisualDensity(horizontal: -4, vertical: -4),
                   icon: const Icon(Icons.chevron_left),
                   color: controlColor,
                   tooltip: _isDisplayingFirstMonth
@@ -831,6 +847,8 @@ class _MonthPickerState extends State<_MonthPicker> {
                       _isDisplayingFirstMonth ? null : _handlePreviousMonth,
                 ),
                 IconButton(
+                  visualDensity:
+                      const VisualDensity(horizontal: -4, vertical: -4),
                   icon: const Icon(Icons.chevron_right),
                   color: controlColor,
                   tooltip: _isDisplayingLastMonth
@@ -1033,6 +1051,10 @@ class _DayPickerState extends State<_DayPicker> {
     final int dayOffset = DateUtils.firstDayOffset(year, month, localizations);
 
     final List<Widget> dayItems = _dayHeaders(headerStyle, localizations);
+
+    double dayPickerRowHeight =
+        widget.calendarConfig?.dayPickerRowHeight ?? _dayPickerRowHeight;
+
     // 1-based day of month, e.g. 1-31 for January, and 1-29 for February on
     // a leap year.
     int day = -dayOffset;
@@ -1093,7 +1115,7 @@ class _DayPickerState extends State<_DayPicker> {
           dayWidget = InkResponse(
             focusNode: _dayFocusNodes[day - 1],
             onTap: () => widget.onChanged(dayToBuild),
-            radius: _dayPickerRowHeight / 2 + 4,
+            radius: dayPickerRowHeight / 2 + 4,
             splashColor: selectedDayBackground.withOpacity(0.38),
             child: Semantics(
               // We want the day of month to be spoken first irrespective of the
@@ -1115,17 +1137,21 @@ class _DayPickerState extends State<_DayPicker> {
       }
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: _monthPickerHorizontalPadding,
-      ),
-      child: GridView.custom(
-        padding: const EdgeInsets.all(0),
-        physics: const ClampingScrollPhysics(),
-        gridDelegate: _dayPickerGridDelegate,
-        childrenDelegate: SliverChildListDelegate(
-          dayItems,
-          addRepaintBoundaries: false,
+    return Container(
+      color: widget.calendarConfig?.calendarDayPickerColor,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: _monthPickerHorizontalPadding,
+        ),
+        child: GridView.custom(
+          padding: EdgeInsets.zero,
+          physics: const ClampingScrollPhysics(),
+          gridDelegate:
+              _DayPickerGridDelegate(calendarConfig: widget.calendarConfig),
+          childrenDelegate: SliverChildListDelegate(
+            dayItems,
+            addRepaintBoundaries: false,
+          ),
         ),
       ),
     );
@@ -1133,16 +1159,22 @@ class _DayPickerState extends State<_DayPicker> {
 }
 
 class _DayPickerGridDelegate extends SliverGridDelegate {
-  const _DayPickerGridDelegate();
+  final CalendarConfig? calendarConfig;
+  const _DayPickerGridDelegate({required this.calendarConfig});
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
     const int columnCount = DateTime.daysPerWeek;
     final double tileWidth = constraints.crossAxisExtent / columnCount;
-    final double tileHeight = math.min(
-      _dayPickerRowHeight,
-      constraints.viewportMainAxisExtent / (_maxDayPickerRowCount + 1),
-    );
+
+    final double tileHeight = calendarConfig?.dayPickerFlexHeight != null &&
+            calendarConfig!.dayPickerFlexHeight
+        ? constraints.viewportMainAxisExtent / (_maxDayPickerRowCount)
+        : math.min(
+            calendarConfig?.dayPickerRowHeight ?? _dayPickerRowHeight,
+            constraints.viewportMainAxisExtent / (_maxDayPickerRowCount + 1),
+          );
+
     return SliverGridRegularTileLayout(
       childCrossAxisExtent: tileWidth,
       childMainAxisExtent: tileHeight,
@@ -1157,7 +1189,7 @@ class _DayPickerGridDelegate extends SliverGridDelegate {
   bool shouldRelayout(_DayPickerGridDelegate oldDelegate) => false;
 }
 
-const _DayPickerGridDelegate _dayPickerGridDelegate = _DayPickerGridDelegate();
+// const _DayPickerGridDelegate _dayPickerGridDelegate = _DayPickerGridDelegate();
 
 /// A scrollable grid of years to allow picking a year.
 ///

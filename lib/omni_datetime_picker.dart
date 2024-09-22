@@ -177,6 +177,7 @@ class TimePickerSpinnerConfig {
   final double? itemHeight;
   final double? itemWidth;
   final double? spacing;
+  final EdgeInsets? spinnerPadding;
   late int itemCount;
 
   final BoxDecoration? Function({required bool isSelected})? spinnerBoxDeco;
@@ -185,6 +186,7 @@ class TimePickerSpinnerConfig {
   final bool unselectedHasRotation;
   late int getMedian;
   late int lengthToMedian;
+  final Color? spinnerColor;
 
   TimePickerSpinnerConfig(
       {this.itemHeight,
@@ -194,7 +196,9 @@ class TimePickerSpinnerConfig {
       Container? selectedVerticalContainer,
       this.textStyle,
       this.unselectedHasRotation = false,
-      int? itemCount}) {
+      int? itemCount,
+      this.spinnerPadding,
+      this.spinnerColor}) {
     this.selectedVerticalContainer =
         selectedVerticalContainer ?? defaultSelectedVerticalContainer();
     this.itemCount = itemCount ?? defaultItemCount;
@@ -290,14 +294,20 @@ class CalendarConfig {
   final double? yearPickerPadding;
   final double? yearPickerRowHeight;
   final double? yearPickerRowSpacing;
-  CalendarConfig({
-    this.tabBarHeight,
-    this.subHeaderHeight,
-    this.yearItemSize,
-    this.yearItemBorderRadius,
-    this.yearPickerColumnCount,
-    this.yearPickerPadding,
-    this.yearPickerRowHeight,
-    this.yearPickerRowSpacing,
-  });
+  final Color? calendarDayPickerColor;
+
+  final double? dayPickerRowHeight;
+  final bool dayPickerFlexHeight;
+  CalendarConfig(
+      {this.tabBarHeight,
+      this.subHeaderHeight,
+      this.yearItemSize,
+      this.yearItemBorderRadius,
+      this.yearPickerColumnCount,
+      this.yearPickerPadding,
+      this.yearPickerRowHeight,
+      this.yearPickerRowSpacing,
+      this.calendarDayPickerColor,
+      this.dayPickerRowHeight,
+      this.dayPickerFlexHeight = false});
 }
