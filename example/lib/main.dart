@@ -124,11 +124,11 @@ class MyHomePage extends StatelessWidget {
                       subHeaderHeight: 40,
                       yearItemBorderRadius: 8,
                       yearItemSize: Size(50, 40)),
-                  constraints: BoxConstraints(maxHeight: 600),
+                  constraints: BoxConstraints(maxHeight: 300),
                   timePickerSpinnerConfig: TimePickerSpinnerConfig(
                     spinnerColor: Colors.greenAccent.withOpacity(0.05),
-                    spinnerPadding: EdgeInsets.symmetric(vertical: 0),
-                    itemHeight: 30,
+                    spinnerPadding: EdgeInsets.symmetric(vertical: 8),
+                    itemHeight: 20,
                     spacing: 20,
                     itemCount: 3,
                     selectedVerticalContainer: Container(
@@ -168,7 +168,7 @@ class MyHomePage extends StatelessWidget {
                               TextStyle(fontSize: 10, color: Colors.black),
                           //* day picker text style
                           bodySmall:
-                              TextStyle(fontSize: 12, color: Colors.black),
+                              TextStyle(fontSize: 14, color: Colors.black),
                           //* subheader text style
                           titleSmall:
                               TextStyle(fontSize: 14, color: Colors.black),
